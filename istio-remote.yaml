@@ -1,0 +1,30 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  components:
+    base:
+      enabled: true
+    pilot:
+      enabled: false
+    istiodRemote:
+      enabled: true
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+
+  addonComponents:
+    prometheus:
+      enabled: false
+  values:
+    global:
+      centralIstiod: true
+
+      # Replace ISTIOD_REMOTE_EP with the the value of ISTIOD_REMOTE_EP set earlier.
+      remotePilotAddress: 9.46.83.230
+      caAddress: 9.46.83.230:15012
+
+    istiodRemote:
+            injectionURL: https://9.46.83.230:15017/inject
+
+    base:
+            validationURL: https://9.46.83.230:15017/validate
