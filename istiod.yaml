@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  components:
+    base:
+      enabled: true
+    pilot:
+      enabled: true
+    ingressGateways:
+  values:
+    global:
+      caAddress: 9.46.83.230:15012
