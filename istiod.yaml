@@ -7,12 +7,10 @@ spec:
       controlPlaneAuthPolicy: MUTUAL_TLS
   components:
     base:
-      enabled: false
+      enabled: true
     pilot:
       enabled: true
     ingressGateways:
   values:
     global:
       caAddress: 9.46.83.230:31238
-    pilot:
-      useRemoteKubeConfig: true
