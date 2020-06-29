@@ -17,14 +17,10 @@ spec:
       enabled: false
   values:
     global:
-      centralIstiod: true
-
-      # Replace ISTIOD_REMOTE_EP with the the value of ISTIOD_REMOTE_EP set earlier.
-      remotePilotAddress: 9.46.83.230
-      caAddress: 9.46.83.230:15012
+      caAddress: 9.46.83.230:31236
 
     istiodRemote:
-            injectionURL: https://9.46.83.230:15017/inject
+            injectionURL: https://9.46.83.230:31236/inject
 
     base:
-            validationURL: https://9.46.83.230:15017/validate
+            validationURL: https://9.46.83.230:31236/validate
