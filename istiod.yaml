@@ -3,10 +3,10 @@ kind: IstioOperator
 spec:
   components:
     base:
-      enabled: true
+      enabled: false
     pilot:
       enabled: true
     ingressGateways:
   values:
     global:
-      caAddress: 9.46.83.230:15012
+      caAddress: 9.46.83.230:31238
