@@ -20,7 +20,7 @@ spec:
       caAddress: 9.46.83.230:31236
 
     istiodRemote:
-            injectionURL: https://9.46.83.230:31236/inject
+            injectionURL: https://9.46.83.230:31238/inject
 
     base:
-            validationURL: https://9.46.83.230:31236/validate
+            validationURL: https://9.46.83.230:31238/validate
