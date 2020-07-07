@@ -3,7 +3,7 @@ kind: IstioOperator
 spec:
   meshConfig:
     defaultConfig:
-      discoveryAddress: 9.46.83.230:31238
+      discoveryAddress: 9.46.83.230:31236
       controlPlaneAuthPolicy: MUTUAL_TLS
   components:
     base:
@@ -13,4 +13,4 @@ spec:
     ingressGateways:
   values:
     global:
-      caAddress: 9.46.83.230:31238
+      caAddress: 9.46.83.230:31236
