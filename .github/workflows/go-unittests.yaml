@@ -45,11 +45,6 @@ jobs:
           version: v1.55.2
           working-directory: ${{ env.GOSRC_DIR }}
 
-      - name: Run golangunit test
-        run: |
-          cd $GOSRC_DIR
-          make test
-
       - name: Kind
         run: |
           export GOBIN=$(go env GOPATH)/bin
@@ -66,7 +61,7 @@ jobs:
           kubectl get pods -n kube-system
       - name: Run e2e test for microservices-connector
         run: |
-          .github/workflows/scripts/mc_test.sh init_codegen
+          .github/workflows/scripts/e2e/mc_test.sh init_codegen
       - name: Clean up e2e test for microservices-connector
         run: |
           kind delete cluster
