@@ -76,7 +76,7 @@ function validate_chatqna() {
 
    # Wait until the router service is ready
    echo "Waiting for the chatqa router service to be ready..."
-   max_retries=30
+   max_retries=60
    retry_count=0
    while ! is_router_ready; do
        if [ $retry_count -ge $max_retries ]; then
@@ -86,6 +86,8 @@ function validate_chatqna() {
        echo "chatqa router service is not ready yet. Retrying in 10 seconds..."
        sleep 10
        output=$(kubectl get pods -n gmcsample -l app=router-service)
+       kubectl get events -n gmcsample
+       kubectl logs $Controller_POD -n system 
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa router service information:"
