@@ -34,7 +34,7 @@ function validate_chatqna() {
        fi
        retry_count=$((retry_count + 1))
    done
-   export Controller_POD =$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
+   export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
    kubectl exec -it $Controller_POD -n system env
    kubectl logs $Controller_POD -n system
    # Deploy chatQnA sample
