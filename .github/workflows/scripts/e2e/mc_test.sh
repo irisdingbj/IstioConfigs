@@ -204,6 +204,7 @@ case "$1" in
     validate_codegen)
         pushd microservices-connector
         validate_codegen
+        popd
         ;;
     *)
         echo "Unknown function: $1"
