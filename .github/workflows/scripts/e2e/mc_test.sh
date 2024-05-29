@@ -10,7 +10,7 @@ function validate_chatqna() {
    export YAML_DIR=$(pwd)/templates/MicroChatQnA
    kubectl apply -f $(pwd)/config/crd/bases/gmc.opea.io_gmconnectors.yaml
    kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-manager-rbac.yaml
-   kubectl create configmap gmcyaml -n sample --from-file $(pwd)/templates/MicroChatQnA
+   kubectl create configmap gmcyaml -n system --from-file $(pwd)/templates/MicroChatQnA
    kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-manager.yaml
    
    # Wait until the gmc conroller pod is ready
