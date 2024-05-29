@@ -108,7 +108,9 @@ function get_gmc_accessURL() {
     echo $accessUrl
 }
 
-
+function validate_codegen() {
+    echo "todo"
+}
 
 
 if [ $# -eq 0 ]; then
