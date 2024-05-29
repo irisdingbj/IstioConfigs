@@ -38,11 +38,12 @@ function validate_chatqna() {
 
    # Check controller logs
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
-   kubectl logs $Controller_POD -n system
    
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n gmcsample
+
    
    # Wait until the chatqa gmc custom resource is ready
    echo "Waiting for the chatqa gmc custom resource to be ready..."
