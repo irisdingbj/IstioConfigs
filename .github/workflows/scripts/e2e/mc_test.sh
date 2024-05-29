@@ -35,20 +35,22 @@ function verify_chatqna() {
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
+   # Wait until the chatqa gmc custom resource is ready
+   echo "Waiting for the chatqa gmc custom resource to be ready..."
    while ! is_gmc_ready; do
        if [ $retry_count -ge $max_retries ]; then
-           echo "chatQnA gmc is not ready after waiting for a significant amount of time"
+           echo "chatqa gmc custom resource is not ready after waiting for a significant amount of time"
            exit 1
        fi
-       echo "chatQnA gmc is not ready yet. Retrying in 10 seconds..."
+       echo "chatqa gmc custom resource is not ready yet. Retrying in 10 seconds..."
        sleep 10
        output=$(kubectl get gmc -n gmcsample)
         # Check if the command was successful
        if [ $? -eq 0 ]; then
-         echo "Successfully retrieved gmc controller information:"
+         echo "Successfully retrieved chatqa gmc custom resource information:"
          echo "$output"
        else
-         echo "Failed to retrieve gmc controller information"
+         echo "Failed to retrieve chatqa gmc custom resource information"
          exit 1
        fi
        retry_count=$((retry_count + 1))
