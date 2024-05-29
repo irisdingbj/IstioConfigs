@@ -72,6 +72,28 @@ function validate_chatqna() {
 
    # deploy client pod for testing
    kubectl apply -f $(pwd)/test/client/sleep.yaml
+
+   # wait for client pod ready
+   max_retries=30
+   retry_count=0
+   while ! is_client_ready; do
+       if [ $retry_count -ge $max_retries ]; then
+           echo "client pod is not ready after waiting for a significant amount of time"
+           exit 1
+       fi
+       echo "client pod is not ready yet. Retrying in 10 seconds..."
+       sleep 10
+       output=$(kubectl get pods)
+        # Check if the command was successful
+       if [ $? -eq 0 ]; then
+         echo "Successfully retrieved client pod information:"
+         echo "$output"
+       else
+         echo "Failed to retrieve client pod information"
+         exit 1
+       fi
+       retry_count=$((retry_count + 1))
+   done
    
    # send request to chatqnA 
    export SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
@@ -100,6 +122,16 @@ function is_gmccontroller_ready() {
         return 1
     fi
 }
+
+function is_client_ready() {
+    pod_status=$(kubectl get pods -l app=sleep -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    if [ "$pod_status" == "True" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 function is_gmc_ready() {
     ready_status=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.status}")
     if [ "$ready_status" == "Success" ]; then
