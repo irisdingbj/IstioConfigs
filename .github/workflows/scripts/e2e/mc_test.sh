@@ -4,12 +4,14 @@
 
 LOG_PATH=.
 
-function verify_chatqna() {
+function validate_chatqna() {
    # executed under path microservices-connector
+   # Deploy GMC CRD and controller
    export YAML_DIR=$(pwd)/templates/MicroChatQnA
    kubectl apply -f $(pwd)/config/crd/bases/gmc.opea.io_gmconnectors.yaml
    kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-manager-rbac.yaml
    envsubst < $(pwd)/templates/MicroChatQnA/gmc-manager.yaml | kubectl apply -f -
+   
    # Wait until the gmc conroller pod is ready
    echo "Waiting for the pod to be ready..."
    max_retries=30
@@ -32,9 +34,11 @@ function verify_chatqna() {
        fi
        retry_count=$((retry_count + 1))
    done
+   
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
+   
    # Wait until the chatqa gmc custom resource is ready
    echo "Waiting for the chatqa gmc custom resource to be ready..."
    while ! is_gmc_ready; do
@@ -78,13 +82,8 @@ function is_gmc_ready() {
     fi
 }
 function get_gmc_accessURL() {
-    accessUrl=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='codegen')].status.accessUrl}")
+    accessUrl=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
     echo $accessUrl
-}
-
-function init_chatqna() {
-    echo "Init chatqna"
-    kubectl 
 }
 
 
@@ -140,25 +139,14 @@ if [ $# -eq 0 ]; then
 fi
 
 case "$1" in
-    init_codegen)
+    validate_chatqna)
         pushd microservices-connector
-        init_codegen
+        validate_chatqna
         popd
         ;;
     validate_codegen)
-        RELEASE_NAME=$2
-        NAMESPACE=$3
+        pushd microservices-connector
         validate_codegen
-        ;;
-    init_chatqna)
-        pushd helm-charts/chatqna
-        init_chatqna
-        popd
-        ;;
-    validate_chatqna)
-        RELEASE_NAME=$2
-        NAMESPACE=$3
-        validate_chatqna
         ;;
     *)
         echo "Unknown function: $1"
