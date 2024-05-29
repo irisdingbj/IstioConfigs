@@ -30,7 +30,7 @@ import (
 
 var (
 	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("sqqqeaaaaaaassssssssssss sssssstup ")
+	setupLog = ctrl.Log.WithName("sqaaqqeaaaaaaassssssssssss sssssstup ")
 )
 
 func init() {
