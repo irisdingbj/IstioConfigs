@@ -49,10 +49,12 @@ function validate_chatqna() {
        echo "chatqa gmc custom resource is not ready yet. Retrying in 10 seconds..."
        sleep 10
        output=$(kubectl get gmc -n gmcsample)
+       output1=$(kubectl get pods -n gmcsample)
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa gmc custom resource information:"
          echo "$output"
+          echo "$output1"
        else
          echo "Failed to retrieve chatqa gmc custom resource information"
          exit 1
