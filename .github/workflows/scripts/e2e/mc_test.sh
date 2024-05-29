@@ -75,8 +75,9 @@ function validate_chatqna() {
    
    # send request to chatqnA 
    export SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
-   kubectl exec -it "$SLEEP_POD" -- curl -s $accessUrl -H "Content-Type: application/json" -d '{
-        "messages": "What is the revenue of Nike in 2023?"}' > ${LOG_PATH}/curl_chatqna.log
+   echo "$SLEEP_POD"
+   kubectl exec -it "$SLEEP_POD" -- curl $accessUrl -X POST -H "Content-Type: application/json" -d '{
+        "text": "What is the revenue of Nike in 2023?"}' > ${LOG_PATH}/curl_chatqna.log
    echo "Checking response results, make sure the output is reasonable. "
    local status=false
    if [[ -f $LOG_PATH/curl_chatqna.log ]] && \
