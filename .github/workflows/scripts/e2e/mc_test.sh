@@ -47,24 +47,25 @@ function init_codegen() {
    echo "Waiting for the pod to be ready..."
    max_retries=30
    retry_count=0
-   while ! is_pod_ready control-plane gmc-controller; do
+   while ! is_pod_ready; do
        if [ $retry_count -ge $max_retries ]; then
            echo "gmc-controller is not ready after waiting for a significant amount of time"
-           # exit 1
+           exit 1
        fi
        echo "Pod is not ready yet. Retrying in 10 seconds..."
        sleep 10
+       output=$(kubectl get pods -n system)
+        # Check if the command was successful
+       if [ $? -eq 0 ]; then
+         echo "Successfully retrieved gmc controller information:"
+         echo "$output"
+       else
+         echo "Failed to retrieve gmc controller information"
+         exit 1
+       fi
        retry_count=$((retry_count + 1))
    done
-    output=$(kubectl get pods -n system)
-     # Check if the command was successful
-   if [ $? -eq 0 ]; then
-       echo "Successfully retrieved gmc controller information:"
-       echo "$output"
-   else
-       echo "Failed to retrieve gmc controller information"
-       exit 1
-   fi
+
    kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
    output=$(kubectl get gmc -n gmcsample)
@@ -83,9 +84,7 @@ function init_codegen() {
 }
 
 function is_pod_ready() {
-    local label_name=$1
-    local label_value=$2 
-    pod_status=$(kubectl get pods -l $label_name=$label_value -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    pod_status=$(kubectl get pods -n system -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
     if [ "$pod_status" == "True" ]; then
         return 0
     else
