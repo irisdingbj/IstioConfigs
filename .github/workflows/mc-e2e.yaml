@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-name: mc e2d test
+name: mc e2e test
 
 on:
   pull_request:
