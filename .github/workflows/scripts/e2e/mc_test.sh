@@ -91,6 +91,23 @@ function is_pod_ready() {
         return 1
     fi
 }
+function is_gmc_ready() {
+    pod_status=$(kubectl get gmc -n gmcsample -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    if [ "$pod_status" == "Success" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+function get_gmc_accessURL() {
+    pod_status=$(kubectl get gmc -n gmcsample -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    if [ "$pod_status" == "Success" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 function init_chatqna() {
     echo "Init chatqna"
     kubectl 
