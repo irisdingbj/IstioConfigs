@@ -52,6 +52,7 @@ function validate_chatqna() {
        sleep 10
        output=$(kubectl get gmc -n gmcsample)
        output1=$(kubectl get pods -n gmcsample)
+       kubectl logs $Controller_POD -n system
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa gmc custom resource information:"
