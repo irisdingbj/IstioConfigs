@@ -109,9 +109,6 @@ function get_gmc_accessURL() {
 }
 
 
-function validate_codegen() {
-
-}
 
 
 if [ $# -eq 0 ]; then
