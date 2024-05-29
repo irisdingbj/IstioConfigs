@@ -35,19 +35,28 @@ function verify_chatqna() {
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
-   output=$(kubectl get gmc -n gmcsample)
-     # Check if the command was successful
-   if [ $? -eq 0 ]; then
-       echo "Successfully retrieved chantQnA  information:"
-       echo "$output"
-   else
-       echo "Failed to retrieve chantQnA information"
-       exit 1
-    fi
-
-
-
-
+   while ! is_gmc_ready; do
+       if [ $retry_count -ge $max_retries ]; then
+           echo "chatQnA gmc is not ready after waiting for a significant amount of time"
+           exit 1
+       fi
+       echo "chatQnA gmc is not ready yet. Retrying in 10 seconds..."
+       sleep 10
+       output=$(kubectl get gmc -n gmcsample)
+        # Check if the command was successful
+       if [ $? -eq 0 ]; then
+         echo "Successfully retrieved gmc controller information:"
+         echo "$output"
+       else
+         echo "Failed to retrieve gmc controller information"
+         exit 1
+       fi
+       retry_count=$((retry_count + 1))
+   done
+   accessUrl=$(get_gmc_accessURL)
+   echo $accessUrl
+   output=$(kubectl get pods -n gmcsample)
+   echo $output
 }
 
 function is_gmccontroller_ready() {
@@ -59,20 +68,16 @@ function is_gmccontroller_ready() {
     fi
 }
 function is_gmc_ready() {
-    pod_status=$(kubectl get gmc -n gmcsample -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
-    if [ "$pod_status" == "Success" ]; then
+    ready_status=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.status}")
+    if [ "$ready_status" == "Success" ]; then
         return 0
     else
         return 1
     fi
 }
 function get_gmc_accessURL() {
-    pod_status=$(kubectl get gmc -n gmcsample -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
-    if [ "$pod_status" == "Success" ]; then
-        return 0
-    else
-        return 1
-    fi
+    accessUrl=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='codegen')].status.accessUrl}")
+    echo $accessUrl
 }
 
 function init_chatqna() {
