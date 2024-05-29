@@ -37,7 +37,7 @@ function validate_chatqna() {
    
    # Deploy chatQnA sample
    kubectl create ns gmcsample
-   kubectl apply -f config/samples/chatQnA_v2.yaml
+   kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
    
    # Wait until the chatqa gmc custom resource is ready
    echo "Waiting for the chatqa gmc custom resource to be ready..."
@@ -63,6 +63,25 @@ function validate_chatqna() {
    echo $accessUrl
    output=$(kubectl get pods -n gmcsample)
    echo $output
+
+   # deploy client pod for testing
+   kubectl apply -f $(pwd)/test/client/sleep.yaml
+   # send request to chatqnA 
+   export SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
+   kubectl exec -it "$SLEEP_POD" -- curl -s $accessUrl -H "Content-Type: application/json" -d '{
+        "messages": "What is the revenue of Nike in 2023?"}' > ${LOG_PATH}/curl_chatqna.log
+   echo "Checking response results, make sure the output is reasonable. "
+   local status=false
+   if [[ -f $LOG_PATH/curl_chatqna.log ]] && \
+   [[ $(grep -c "billion" $LOG_PATH/curl_chatqna.log) != 0 ]]; then
+      status=true
+   fi
+   if [ $status == false ]; then
+      echo "Response check failed, please check the logs in artifacts!"
+      exit 1
+   else
+      echo "Response check succeed!"
+   fi  
 }
 
 function is_gmccontroller_ready() {
