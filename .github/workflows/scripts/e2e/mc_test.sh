@@ -5,7 +5,7 @@
 LOG_PATH=.
 
 function init_codegen() {
-    # executed under path helm-charts/codegen
+    # executed under path microservices-connector
     # init var
    output=$(kubectl get pods)
 
@@ -30,8 +30,31 @@ function init_codegen() {
    fi
    
    echo $LOG_PATH
-   export YAML_DIR=$LOG_PATH/samples/MicroChatQnA
-   kubectl apply -f $LOG_PATH/config/crd/bases/gmc.opea.io_gmconnectors.yaml
+   export YAML_DIR=samples/MicroChatQnA
+   kubectl apply -f config/crd/bases/gmc.opea.io_gmconnectors.yaml
+   kubectl apply -f samples/MicroChatQnA/gmc-manager-rbac.yaml
+   envsubst < samples/MicroChatQnA/gmc-manager.yaml | kubectl apply -f -
+   output=$(kubectl get pods -n system)
+     # Check if the command was successful
+   if [ $? -eq 0 ]; then
+       echo "Successfully retrieved gmc controller information:"
+       echo "$output"
+   else
+       echo "Failed to retrieve gmc controller information"
+       exit 1
+   fi
+   kubectl apply -f config/samples/chatQnA_v2.yaml
+   output=$(kubectl get gmc -n gmcsample)
+     # Check if the command was successful
+   if [ $? -eq 0 ]; then
+       echo "Successfully retrieved chantQnA  information:"
+       echo "$output"
+   else
+       echo "Failed to retrieve chantQnA information"
+       exit 1
+
+
+
 
 }
 
@@ -93,7 +116,7 @@ fi
 
 case "$1" in
     init_codegen)
-        pushd helm-charts/codegen
+        pushd microservices-connector
         init_codegen
         popd
         ;;
