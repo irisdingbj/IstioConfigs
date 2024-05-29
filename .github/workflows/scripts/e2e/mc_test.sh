@@ -43,6 +43,7 @@ function validate_chatqna() {
    kubectl create ns gmcsample
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
    kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n gmcsample
+   kubectl get sa -n gmcsample
 
    
    # Wait until the chatqa gmc custom resource is ready
