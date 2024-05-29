@@ -31,7 +31,7 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("stuut8888yy7auuaaaaaassssssssssss sssssstup ")
-)
+u)
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
