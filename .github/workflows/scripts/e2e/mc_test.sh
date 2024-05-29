@@ -38,7 +38,7 @@ function validate_chatqna() {
 
    # Check controller logs
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
-   kubectl logs $Controller_POD -n system --follow
+
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
@@ -58,7 +58,6 @@ function validate_chatqna() {
        sleep 10
        output=$(kubectl get gmc -n gmcsample)
        output1=$(kubectl get pods -n gmcsample)
-       kubectl logs $Controller_POD -n system
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa gmc custom resource information:"
@@ -77,7 +76,7 @@ function validate_chatqna() {
 
    # Wait until the router service is ready
    echo "Waiting for the chatqa router service to be ready..."
-   max_retries=60
+   max_retries=80
    retry_count=0
    while ! is_router_ready; do
        if [ $retry_count -ge $max_retries ]; then
@@ -123,7 +122,7 @@ function validate_chatqna() {
        fi
        retry_count=$((retry_count + 1))
    done
-   
+   kubectl logs $Controller_POD -n system
    # send request to chatqnA 
    export SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
    echo "$SLEEP_POD"
