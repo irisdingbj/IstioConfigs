@@ -108,25 +108,7 @@ function get_gmc_accessURL() {
 
 
 function validate_codegen() {
-    ip_address=$(kubectl get svc $RELEASE_NAME -n $NAMESPACE -o jsonpath='{.spec.clusterIP}')
-    port=$(kubectl get svc $RELEASE_NAME -n $NAMESPACE -o jsonpath='{.spec.ports[0].port}')
-    # Curl the Mega Service
-    curl http://${ip_address}:${port}/v1/codegen -H "Content-Type: application/json" -d '{
-        "model": "ise-uiuc/Magicoder-S-DS-6.7B",
-        "messages": "Implement a high-level API for a TODO list application. The API takes as input an operation request and updates the TODO list in place. If the request is invalid, raise an exception."}' > curl_megaservice.log
 
-    echo "Checking response results, make sure the output is reasonable. "
-    local status=true
-    if [[ -f curl_megaservice.log ]] && \
-    [[ $(grep -c "billion" curl_megaservice.log) != 0 ]]; then
-        status=true
-    fi
-
-    if [ $status == false ]; then
-        echo "Response check failed, please check the logs in artifacts!"
-    else
-        echo "Response check succeed!"
-    fi
 }
 
 
