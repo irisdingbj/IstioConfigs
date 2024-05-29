@@ -18,7 +18,7 @@ function init_codegen() {
        exit 1
    fi
    
-   pp=$(ls -al)
+   pp=$(pwd)
 
    # Check if the command was successful
    if [ $? -eq 0 ]; then
