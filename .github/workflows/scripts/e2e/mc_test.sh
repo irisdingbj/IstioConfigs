@@ -52,6 +52,7 @@ function init_codegen() {
    else
        echo "Failed to retrieve chantQnA information"
        exit 1
+    fi
 
 
 
