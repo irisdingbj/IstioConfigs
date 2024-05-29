@@ -54,7 +54,7 @@ function validate_chatqna() {
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa gmc custom resource information:"
          echo "$output"
-          echo "$output1"
+         echo "$output1"
        else
          echo "Failed to retrieve chatqa gmc custom resource information"
          exit 1
