@@ -38,7 +38,7 @@ function validate_chatqna() {
 
    # Check controller logs
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
-   
+   kubectl logs $Controller_POD -n system --follow
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
@@ -88,7 +88,6 @@ function validate_chatqna() {
        sleep 10
        output=$(kubectl get pods -n gmcsample -l app=router-service)
        kubectl get events -n gmcsample
-       kubectl logs $Controller_POD -n system 
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa router service information:"
