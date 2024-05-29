@@ -4,55 +4,22 @@
 
 LOG_PATH=.
 
-function init_codegen() {
-    # executed under path microservices-connector
-    # init var
-   output=$(kubectl get pods)
-
-   # Check if the command was successful
-   if [ $? -eq 0 ]; then
-       echo "Successfully retrieved pods information:"
-       echo "$output"
-   else
-       echo "Failed to retrieve pods information"
-       exit 1
-   fi
-   
-   pp=$(pwd)
-
-   # Check if the command was successful
-   if [ $? -eq 0 ]; then
-       echo "Successfully list file info:"
-       echo "$pp"
-   else
-       echo "Failed to list file information"
-       exit 1
-   fi
-   
-   echo $LOG_PATH
+function verify_chatqna() {
+   # executed under path microservices-connector
    export YAML_DIR=$(pwd)/templates/MicroChatQnA
    kubectl apply -f $(pwd)/config/crd/bases/gmc.opea.io_gmconnectors.yaml
    kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-manager-rbac.yaml
    envsubst < $(pwd)/templates/MicroChatQnA/gmc-manager.yaml | kubectl apply -f -
-   output=$(kubectl get pods -n system)
-     # Check if the command was successful
-   if [ $? -eq 0 ]; then
-       echo "Successfully retrieved gmc controller information:"
-       echo "$output"
-   else
-       echo "Failed to retrieve gmc controller information"
-       exit 1
-   fi
-   # Wait until the pod is ready
+   # Wait until the gmc conroller pod is ready
    echo "Waiting for the pod to be ready..."
    max_retries=30
    retry_count=0
-   while ! is_pod_ready; do
+   while ! is_gmccontroller_ready; do
        if [ $retry_count -ge $max_retries ]; then
            echo "gmc-controller is not ready after waiting for a significant amount of time"
            exit 1
        fi
-       echo "Pod is not ready yet. Retrying in 10 seconds..."
+       echo "gmc-controller is not ready yet. Retrying in 10 seconds..."
        sleep 10
        output=$(kubectl get pods -n system)
         # Check if the command was successful
@@ -65,7 +32,7 @@ function init_codegen() {
        fi
        retry_count=$((retry_count + 1))
    done
-
+   # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
    output=$(kubectl get gmc -n gmcsample)
@@ -83,7 +50,7 @@ function init_codegen() {
 
 }
 
-function is_pod_ready() {
+function is_gmccontroller_ready() {
     pod_status=$(kubectl get pods -n system -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
     if [ "$pod_status" == "True" ]; then
         return 0
