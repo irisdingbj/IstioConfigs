@@ -38,12 +38,15 @@ function validate_chatqna() {
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
    kubectl exec -i $Controller_POD -n system env
    kubectl logs $Controller_POD -n system
+   
    # Deploy chatQnA sample
    kubectl create ns gmcsample
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
    
    # Wait until the chatqa gmc custom resource is ready
    echo "Waiting for the chatqa gmc custom resource to be ready..."
+   max_retries=30
+   retry_count=0
    while ! is_gmc_ready; do
        if [ $retry_count -ge $max_retries ]; then
            echo "chatqa gmc custom resource is not ready after waiting for a significant amount of time"
