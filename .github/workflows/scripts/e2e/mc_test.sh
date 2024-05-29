@@ -43,6 +43,20 @@ function init_codegen() {
        echo "Failed to retrieve gmc controller information"
        exit 1
    fi
+   # Wait until the pod is ready
+   echo "Waiting for the pod to be ready..."
+   max_retries=30
+   retry_count=0
+   while ! is_pod_ready control-plane gmc-controller; do
+       if [ $retry_count -ge $max_retries ]; then
+           echo "gmc-controller is not ready after waiting for a significant amount of time"
+           exit 1
+       fi
+       echo "Pod is not ready yet. Retrying in 10 seconds..."
+       sleep 10
+       retry_count=$((retry_count + 1))
+   done
+   kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
    output=$(kubectl get gmc -n gmcsample)
      # Check if the command was successful
@@ -59,10 +73,21 @@ function init_codegen() {
 
 }
 
+function is_pod_ready() {
+    local label_name=$1
+    local label_value=$2 
+    pod_status=$(kubectl get pods -l $label_name=$label_value -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    if [ "$pod_status" == "True" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
 function init_chatqna() {
     echo "Init chatqna"
     kubectl 
 }
+
 
 function validate_codegen() {
     ip_address=$(kubectl get svc $RELEASE_NAME -n $NAMESPACE -o jsonpath='{.spec.clusterIP}')
