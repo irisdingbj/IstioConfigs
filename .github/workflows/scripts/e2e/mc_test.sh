@@ -66,6 +66,7 @@ function validate_chatqna() {
 
    # deploy client pod for testing
    kubectl apply -f $(pwd)/test/client/sleep.yaml
+   
    # send request to chatqnA 
    export SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
    kubectl exec -it "$SLEEP_POD" -- curl -s $accessUrl -H "Content-Type: application/json" -d '{
