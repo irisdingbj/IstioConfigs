@@ -28,6 +28,10 @@ function init_codegen() {
        echo "Failed to list file information"
        exit 1
    fi
+   
+   echo $LOG_PATH
+   export YAML_DIR=$LOG_PATH/samples/MicroChatQnA
+   kubectl apply -f $LOG_PATH/config/crd/bases/gmc.opea.io_gmconnectors.yaml
 
 }
 
