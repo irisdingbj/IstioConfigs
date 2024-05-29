@@ -30,10 +30,10 @@ function init_codegen() {
    fi
    
    echo $LOG_PATH
-   export YAML_DIR=samples/MicroChatQnA
-   kubectl apply -f config/crd/bases/gmc.opea.io_gmconnectors.yaml
-   kubectl apply -f samples/MicroChatQnA/gmc-manager-rbac.yaml
-   envsubst < samples/MicroChatQnA/gmc-manager.yaml | kubectl apply -f -
+   export YAML_DIR=$(pwd)/templates/MicroChatQnA
+   kubectl apply -f $(pwd)/config/crd/bases/gmc.opea.io_gmconnectors.yaml
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-manager-rbac.yaml
+   envsubst < $(pwd)/templates/MicroChatQnA/gmc-manager.yaml | kubectl apply -f -
    output=$(kubectl get pods -n system)
      # Check if the command was successful
    if [ $? -eq 0 ]; then
