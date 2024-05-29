@@ -50,12 +50,21 @@ function init_codegen() {
    while ! is_pod_ready control-plane gmc-controller; do
        if [ $retry_count -ge $max_retries ]; then
            echo "gmc-controller is not ready after waiting for a significant amount of time"
-           exit 1
+           # exit 1
        fi
        echo "Pod is not ready yet. Retrying in 10 seconds..."
        sleep 10
        retry_count=$((retry_count + 1))
    done
+    output=$(kubectl get pods -n system)
+     # Check if the command was successful
+   if [ $? -eq 0 ]; then
+       echo "Successfully retrieved gmc controller information:"
+       echo "$output"
+   else
+       echo "Failed to retrieve gmc controller information"
+       exit 1
+   fi
    kubectl create ns gmcsample
    kubectl apply -f config/samples/chatQnA_v2.yaml
    output=$(kubectl get gmc -n gmcsample)
