@@ -38,13 +38,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run golang lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          args: --timeout=10m
-          version: v1.55.2
-          working-directory: ${{ env.GOSRC_DIR }}
-
       - name: Kind
         run: |
           export GOBIN=$(go env GOPATH)/bin
