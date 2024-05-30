@@ -40,10 +40,10 @@ function validate_chatqna() {
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
 
    # Deploy chatQnA sample
-   kubectl create ns gmcsample
-   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n gmcsample
-   kubectl get sa -n gmcsample
-   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-secret.yaml -n gmcsample
+   kubectl create ns chatqa
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n chatqa
+   kubectl get sa -n chatqa
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-secret.yaml -n chatqa
    sleep 10
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
 
@@ -60,8 +60,8 @@ function validate_chatqna() {
        fi
        echo "chatqa gmc custom resource is not ready yet. Retrying in 10 seconds..."
        sleep 10
-       output=$(kubectl get gmc -n gmcsample)
-       output1=$(kubectl get pods -n gmcsample)
+       output=$(kubectl get gmc -n chatqa)
+       output1=$(kubectl get pods -n chatqa)
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa gmc custom resource information:"
@@ -75,7 +75,7 @@ function validate_chatqna() {
    done
    accessUrl=$(get_gmc_accessURL)
    echo $accessUrl
-   output=$(kubectl get pods -n gmcsample)
+   output=$(kubectl get pods -n chatqa)
    echo $output
 
    # Wait until the router service is ready
@@ -90,7 +90,7 @@ function validate_chatqna() {
        echo "chatqa router service is not ready yet. Retrying in 10 seconds..."
        sleep 10
        output=$(kubectl get pods -n gmcsample -l app=router-service)
-       kubectl get events -n gmcsample
+       kubectl get events -n chatqa
         # Check if the command was successful
        if [ $? -eq 0 ]; then
          echo "Successfully retrieved chatqa router service information:"
@@ -133,8 +133,8 @@ function validate_chatqna() {
    kubectl exec "$SLEEP_POD" -- curl $accessUrl -X POST -H "Content-Type: application/json" -d '{
         "text": "What is the revenue of Nike in 2023?"}' > ${LOG_PATH}/curl_chatqna.log
    echo "Checking response results, make sure the output is reasonable. "
-   export ROUTER_POD=$(kubectl get pod -l app=router-service -n gmcsample -o jsonpath={.items..metadata.name})
-   kubectl logs $ROUTER_POD -n gmcsample
+   export ROUTER_POD=$(kubectl get pod -l app=router-service -n chatqa -o jsonpath={.items..metadata.name})
+   kubectl logs $ROUTER_POD -n chatqa
    local status=false
    if [[ -f $LOG_PATH/curl_chatqna.log ]] && \
    [[ $(grep -c "billion" $LOG_PATH/curl_chatqna.log) != 0 ]]; then
@@ -167,7 +167,7 @@ function is_client_ready() {
 }
 
 function is_gmc_ready() {
-    ready_status=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.status}")
+    ready_status=$(kubectl get gmc -n chatqa -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.status}")
     if [ "$ready_status" == "Success" ]; then
         return 0
     else
@@ -176,7 +176,7 @@ function is_gmc_ready() {
 }
 
 function is_router_ready() {
-    ready_status=$(kubectl get pods -n gmcsample -l app=router-service -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    ready_status=$(kubectl get pods -n chatqa -l app=router-service -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
     if [ "$ready_status" == "True" ]; then
         return 0
     else
@@ -184,7 +184,7 @@ function is_router_ready() {
     fi
 }
 function get_gmc_accessURL() {
-    accessUrl=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
+    accessUrl=$(kubectl get gmc -n chatqa -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
     echo $accessUrl
 }
 
