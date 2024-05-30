@@ -21,11 +21,11 @@ function validate_chatqna() {
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
 
    # Deploy chatQnA sample
-   kubectl create ns gmcsample
+   kubectl create ns chatqa
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
-   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n gmcsample
-   kubectl get sa -n gmcsample
-   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-secret.yaml -n gmcsample
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n chatqa
+   kubectl get sa -n chatqa
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-secret.yaml -n chatqa
 
 
    # get accessURL for chatqa
@@ -55,7 +55,7 @@ function validate_chatqna() {
    kubectl exec "$SLEEP_POD" -- curl $accessUrl -X POST -H "Content-Type: application/json" -d '{
         "text": "What is the revenue of Nike in 2023?"}' > ${LOG_PATH}/curl_chatqna.log
    echo "Checking response results, make sure the output is reasonable. "
-   export ROUTER_POD=$(kubectl get pod -l app=router-service -n gmcsample -o jsonpath={.items..metadata.name})
+   export ROUTER_POD=$(kubectl get pod -l app=router-service -n chatqa -o jsonpath={.items..metadata.name})
    kubectl logs $ROUTER_POD -n chatqa
    local status=false
    if [[ -f $LOG_PATH/curl_chatqna.log ]] && \
@@ -110,7 +110,7 @@ function is_pod_ready() {
 }
 
 function get_gmc_accessURL() {
-    accessUrl=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
+    accessUrl=$(kubectl get gmc -n chatqa -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
     echo $accessUrl
 }
 
