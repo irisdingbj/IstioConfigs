@@ -97,9 +97,10 @@ function wait_until_pod_ready() {
 }
 
 function is_pod_ready() {
-    pod_status=$(kubectl get pods -n $1 -l app=$2 -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
-    if $2 == "gmc-controller"
-    pod_status=$(kubectl get pods -n $1  -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    if [ "$2" == "gmc-controller" ]; then
+      pod_status=$(kubectl get pods -n $1 -o jsonpath='{.items[].status.conditions[?(@.type=="Ready")].status}')
+    else
+      pod_status=$(kubectl get pods -n $1 -l app=$2 -o jsonpath='{.items[].status.conditions[?(@.type=="Ready")].status}')
     fi
     if [ "$pod_status" == "True" ]; then
         return 0
