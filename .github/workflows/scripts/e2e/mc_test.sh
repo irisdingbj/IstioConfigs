@@ -14,65 +14,21 @@ function validate_chatqna() {
    kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-manager.yaml
    
    # Wait until the gmc conroller pod is ready
-   echo "Waiting for the pod to be ready..."
-   max_retries=30
-   retry_count=0
-   while ! is_gmccontroller_ready; do
-       if [ $retry_count -ge $max_retries ]; then
-           echo "gmc-controller is not ready after waiting for a significant amount of time"
-           exit 1
-       fi
-       echo "gmc-controller is not ready yet. Retrying in 10 seconds..."
-       sleep 10
-       output=$(kubectl get pods -n system)
-        # Check if the command was successful
-       if [ $? -eq 0 ]; then
-         echo "Successfully retrieved gmc controller information:"
-         echo "$output"
-       else
-         echo "Failed to retrieve gmc controller information"
-         exit 1
-       fi
-       retry_count=$((retry_count + 1))
-   done
+   wait_until_pod_ready "gmc-controller" "system" "gmc-controller"
+
 
    # Check controller logs
    export Controller_POD=$(kubectl get pod -n system -o jsonpath={.items..metadata.name})
 
    # Deploy chatQnA sample
-   kubectl create ns chatqa
-   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n chatqa
-   kubectl get sa -n chatqa
-   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-secret.yaml -n chatqa
-   sleep 10
+   kubectl create ns gmcsample
    kubectl apply -f $(pwd)/config/samples/chatQnA_v2.yaml
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-rbac.yaml -n gmcsample
+   kubectl get sa -n gmcsample
+   kubectl apply -f $(pwd)/templates/MicroChatQnA/gmc-secret.yaml -n gmcsample
 
 
-   
-   # Wait until the chatqa gmc custom resource is ready
-   echo "Waiting for the chatqa gmc custom resource to be ready..."
-   max_retries=30
-   retry_count=0
-   while ! is_gmc_ready; do
-       if [ $retry_count -ge $max_retries ]; then
-           echo "chatqa gmc custom resource is not ready after waiting for a significant amount of time"
-           exit 1
-       fi
-       echo "chatqa gmc custom resource is not ready yet. Retrying in 10 seconds..."
-       sleep 10
-       output=$(kubectl get gmc -n chatqa)
-       output1=$(kubectl get pods -n chatqa)
-        # Check if the command was successful
-       if [ $? -eq 0 ]; then
-         echo "Successfully retrieved chatqa gmc custom resource information:"
-         echo "$output"
-         echo "$output1"
-       else
-         echo "Failed to retrieve chatqa gmc custom resource information"
-         exit 1
-       fi
-       retry_count=$((retry_count + 1))
-   done
+   # get accessURL for chatqa
    accessUrl=$(get_gmc_accessURL)
    echo $accessUrl
    output=$(kubectl get pods -n chatqa)
@@ -80,63 +36,26 @@ function validate_chatqna() {
 
    # Wait until the router service is ready
    echo "Waiting for the chatqa router service to be ready..."
-   #max_retries=80
-   #retry_count=0
-   #while ! is_router_ready; do
-   #    if [ $retry_count -ge $max_retries ]; then
-    #       echo "chatqa router service is not ready after waiting for a significant amount of time"
-   #        exit 1
-    #   fi
-   #    echo "chatqa router service is not ready yet. Retrying in 10 seconds..."
-   #   sleep 10
-    #   output=$(kubectl get pods -n chatqa -l app=router-service)
-    #   kubectl get events -n chatqa
-        # Check if the command was successful
-    #   if [ $? -eq 0 ]; then
-     #    echo "Successfully retrieved chatqa router service information:"
-     #    echo "$output"
-     #  else
-      #   echo "Failed to retrieve chatqa router service information"
-      #   exit 1
-     #  fi
-     #  retry_count=$((retry_count + 1))
-   #done
-   
-   output=$(kubectl get pods -n chatqa)
-   echo $output
-   sleep 20
+   wait_until_pod_ready "chatqna router" "chatqa" "router-service"
+   kubectl get events -n chatqa
+
+ 
+
    # deploy client pod for testing
    kubectl apply -f $(pwd)/test/client/sleep.yaml
 
    # wait for client pod ready
-   max_retries=30
-   retry_count=0
-   while ! is_client_ready; do
-       if [ $retry_count -ge $max_retries ]; then
-           echo "client pod is not ready after waiting for a significant amount of time"
-           exit 1
-       fi
-       echo "client pod is not ready yet. Retrying in 10 seconds..."
-       sleep 10
-       output=$(kubectl get pods)
-        # Check if the command was successful
-       if [ $? -eq 0 ]; then
-         echo "Successfully retrieved client pod information:"
-         echo "$output"
-       else
-         echo "Failed to retrieve client pod information"
-         exit 1
-       fi
-       retry_count=$((retry_count + 1))
-   done
+   wait_until_pod_ready "sleep" "default" "sleep"
+
    kubectl logs $Controller_POD -n system
+
    # send request to chatqnA 
    export SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
    echo "$SLEEP_POD"
    kubectl exec "$SLEEP_POD" -- curl $accessUrl -X POST -H "Content-Type: application/json" -d '{
         "text": "What is the revenue of Nike in 2023?"}' > ${LOG_PATH}/curl_chatqna.log
    echo "Checking response results, make sure the output is reasonable. "
-   export ROUTER_POD=$(kubectl get pod -l app=router-service -n chatqa -o jsonpath={.items..metadata.name})
+   export ROUTER_POD=$(kubectl get pod -l app=router-service -n gmcsample -o jsonpath={.items..metadata.name})
    kubectl logs $ROUTER_POD -n chatqa
    local status=false
    if [[ -f $LOG_PATH/curl_chatqna.log ]] && \
@@ -151,8 +70,37 @@ function validate_chatqna() {
    fi  
 }
 
-function is_gmccontroller_ready() {
-    pod_status=$(kubectl get pods -n system -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+
+
+function wait_until_pod_ready() {
+    echo "Waiting for the $1 to be ready..."
+    max_retries=30
+    retry_count=0
+    while ! is_pod_ready $2 $3; do
+        if [ $retry_count -ge $max_retries ]; then
+            echo "$1 is not ready after waiting for a significant amount of time"
+            exit 1
+        fi
+        echo "$1 is not ready yet. Retrying in 10 seconds..."
+        sleep 10
+        output=$(kubectl get pods -n $2)
+        # Check if the command was successful
+        if [ $? -eq 0 ]; then
+          echo "Successfully retrieved $1 information:"
+          echo "$output"
+        else
+          echo "Failed to retrieve $1 information"
+          exit 1
+        fi
+        retry_count=$((retry_count + 1))
+    done
+}
+
+function is_pod_ready() {
+    pod_status=$(kubectl get pods -n $1 -l app=$2 -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    if $2 == "gmc-controller"
+    pod_status=$(kubectl get pods -n $1  -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
+    fi
     if [ "$pod_status" == "True" ]; then
         return 0
     else
@@ -160,34 +108,8 @@ function is_gmccontroller_ready() {
     fi
 }
 
-function is_client_ready() {
-    pod_status=$(kubectl get pods -l app=sleep -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
-    if [ "$pod_status" == "True" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-function is_gmc_ready() {
-    ready_status=$(kubectl get gmc -n chatqa -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.status}")
-    if [ "$ready_status" == "Success" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-function is_router_ready() {
-    ready_status=$(kubectl get pods -n chatqa -l app=router-service -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}')
-    if [ "$ready_status" == "True" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
 function get_gmc_accessURL() {
-    accessUrl=$(kubectl get gmc -n chatqa -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
+    accessUrl=$(kubectl get gmc -n gmcsample -o jsonpath="{.items[?(@.metadata.name=='chatqa')].status.accessUrl}")
     echo $accessUrl
 }
 
