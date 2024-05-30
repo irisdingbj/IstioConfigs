@@ -47,4 +47,6 @@ jobs:
           .github/workflows/scripts/e2e/mc_test.sh validate_chatqna
       - name: Clean up e2e test for microservices-connector
         run: |
-          kind delete cluster -name mctest
+          kubectl delete ns chatqa
+          kubectl delete ns system
+          kuectl delete crd gmconnectors.gmc.opea.io
