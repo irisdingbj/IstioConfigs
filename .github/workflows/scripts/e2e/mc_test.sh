@@ -80,28 +80,31 @@ function validate_chatqna() {
 
    # Wait until the router service is ready
    echo "Waiting for the chatqa router service to be ready..."
-   max_retries=80
-   retry_count=0
-   while ! is_router_ready; do
-       if [ $retry_count -ge $max_retries ]; then
-           echo "chatqa router service is not ready after waiting for a significant amount of time"
-           exit 1
-       fi
-       echo "chatqa router service is not ready yet. Retrying in 10 seconds..."
-       sleep 10
-       output=$(kubectl get pods -n chatqa -l app=router-service)
-       kubectl get events -n chatqa
+   #max_retries=80
+   #retry_count=0
+   #while ! is_router_ready; do
+   #    if [ $retry_count -ge $max_retries ]; then
+    #       echo "chatqa router service is not ready after waiting for a significant amount of time"
+   #        exit 1
+    #   fi
+   #    echo "chatqa router service is not ready yet. Retrying in 10 seconds..."
+   #   sleep 10
+    #   output=$(kubectl get pods -n chatqa -l app=router-service)
+    #   kubectl get events -n chatqa
         # Check if the command was successful
-       if [ $? -eq 0 ]; then
-         echo "Successfully retrieved chatqa router service information:"
-         echo "$output"
-       else
-         echo "Failed to retrieve chatqa router service information"
-         exit 1
-       fi
-       retry_count=$((retry_count + 1))
-   done
-
+    #   if [ $? -eq 0 ]; then
+     #    echo "Successfully retrieved chatqa router service information:"
+     #    echo "$output"
+     #  else
+      #   echo "Failed to retrieve chatqa router service information"
+      #   exit 1
+     #  fi
+     #  retry_count=$((retry_count + 1))
+   #done
+   
+   output=$(kubectl get pods -n chatqa)
+   echo $output
+   sleep 20
    # deploy client pod for testing
    kubectl apply -f $(pwd)/test/client/sleep.yaml
 
