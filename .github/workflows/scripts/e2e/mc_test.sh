@@ -89,7 +89,7 @@ function validate_chatqna() {
        fi
        echo "chatqa router service is not ready yet. Retrying in 10 seconds..."
        sleep 10
-       output=$(kubectl get pods -n gmcsample -l app=router-service)
+       output=$(kubectl get pods -n chatqa -l app=router-service)
        kubectl get events -n chatqa
         # Check if the command was successful
        if [ $? -eq 0 ]; then
